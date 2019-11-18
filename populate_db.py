@@ -10,7 +10,7 @@ class CodeGenerator:
                  num_of_medical_reports, num_of_notifications,
                  num_of_appointments, num_of_suppliers, num_of_orders,
                  num_of_payment_services, num_of_transactions,
-                 num_of_messages, num_of_questions):
+                 num_of_messages, num_of_questions, include_special_doctor):
 
         self.fake = Faker()
 
@@ -94,23 +94,24 @@ class CodeGenerator:
                                          "ap_datetime": appointments_dates}
 
         # SPECIAL APPOINTMENTS
-        num_of_special_appointments = 132
-        special_appointments_ids = self.get_ids(num_of_special_appointments)
-        special_appointments_dates = []
-        for i in range(0, 11):
+        if include_special_doctor:
+            num_of_special_appointments = 132
+            special_appointments_ids = self.get_ids(num_of_special_appointments)
+            special_appointments_dates = []
+            for i in range(0, 11):
 
-            special_appointments_dates+=self.get_date_and_time(2008 + i,
-                                                                     1, 1,
-                                                                     2008 + i
-                                                                     + 1,
-                                                                     1, 1,
-                                                                     12)
+                special_appointments_dates+=self.get_date_and_time(2008 + i,
+                                                                         1, 1,
+                                                                         2008 + i
+                                                                         + 1,
+                                                                         1, 1,
+                                                                         12)
 
-        special_appointments_specified_values = {"id": special_appointments_ids,
-                                                 "patient_id": patients_ids,
-                                                 "doctor_id":
-                                                     [special_doctor_id],
-                                                 "ap_datetime": special_appointments_dates}
+            special_appointments_specified_values = {"id": special_appointments_ids,
+                                                     "patient_id": patients_ids,
+                                                     "doctor_id":
+                                                         [special_doctor_id],
+                                                     "ap_datetime": special_appointments_dates}
 
         # SUPPLIERS
         suppliers_ids = self.get_ids(num_of_suppliers)
@@ -186,10 +187,11 @@ class CodeGenerator:
                             ["patient_id", "doctor_id"])
 
         # SPECIAL APPOINTMENTS
-        self.populate_table("appointments", num_of_special_appointments,
-                            copy.deepcopy(
-                                special_appointments_specified_values),
-                            ["patient_id", "doctor_id"])
+        if include_special_doctor:
+            self.populate_table("appointments", num_of_special_appointments,
+                                copy.deepcopy(
+                                    special_appointments_specified_values),
+                                ["patient_id", "doctor_id"])
 
         self.populate_table("suppliers", num_of_suppliers,
                             copy.deepcopy(supplier_specified_values))
@@ -370,4 +372,4 @@ if __name__ == "__main__":
                        num_of_appointments=10, num_of_suppliers=2,
                        num_of_orders=4, num_of_payment_services=1,
                        num_of_transactions=7, num_of_messages=15,
-                       num_of_questions=10)
+                       num_of_questions=10, include_special_doctor=True)
