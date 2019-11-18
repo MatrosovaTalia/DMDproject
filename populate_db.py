@@ -22,12 +22,16 @@ class CodeGenerator:
         self.specializations = ["Family", "Anesthesiology", "Emergency"]
         self.products = ["mocha", "gavno", "confety"]
         self.payment_services = ["visa", "mastercard"]
+        self.last_id = 0
 
         # DOCTORS
         doctor_ids = self.get_ids(num_of_doctors)
         doctors_specializations = self.get_spec(num_of_doctors)
         doctors_specified_values = {"user_id": doctor_ids, "specialization":
             doctors_specializations}
+
+        # SPECIAL DOCTOR
+        special_doctor_id = doctor_ids[0]
 
         # PATIENTS
         patients_ids = self.get_ids(num_of_patients)
@@ -73,7 +77,7 @@ class CodeGenerator:
         med_histories_content = self.generate_text(50, num_of_patients)
         med_histories_specified_values = {"patient_id": patients_ids,
                                           "med_info":
-            med_histories_content}
+                                              med_histories_content}
 
         # NOTIFICATIONS
         notifications_ids = self.get_ids(num_of_notifications)
@@ -88,6 +92,25 @@ class CodeGenerator:
         appointments_specified_values = {"id": appointments_ids, "patient_id":
             patients_ids, "doctor_id": doctor_ids,
                                          "ap_datetime": appointments_dates}
+
+        # SPECIAL APPOINTMENTS
+        num_of_special_appointments = 132
+        special_appointments_ids = self.get_ids(num_of_special_appointments)
+        special_appointments_dates = []
+        for i in range(0, 11):
+
+            special_appointments_dates+=self.get_date_and_time(2008 + i,
+                                                                     1, 1,
+                                                                     2008 + i
+                                                                     + 1,
+                                                                     1, 1,
+                                                                     12)
+
+        special_appointments_specified_values = {"id": special_appointments_ids,
+                                                 "patient_id": patients_ids,
+                                                 "doctor_id":
+                                                     [special_doctor_id],
+                                                 "ap_datetime": special_appointments_dates}
 
         # SUPPLIERS
         suppliers_ids = self.get_ids(num_of_suppliers)
@@ -160,6 +183,12 @@ class CodeGenerator:
 
         self.populate_table("appointments", num_of_appointments,
                             copy.deepcopy(appointments_specified_values),
+                            ["patient_id", "doctor_id"])
+
+        # SPECIAL APPOINTMENTS
+        self.populate_table("appointments", num_of_special_appointments,
+                            copy.deepcopy(
+                                special_appointments_specified_values),
                             ["patient_id", "doctor_id"])
 
         self.populate_table("suppliers", num_of_suppliers,
@@ -255,8 +284,9 @@ class CodeGenerator:
 
     def get_ids(self, num_of_ids):
         ids = []
-        for i in range(num_of_ids):
-            ids.append(int(str(hash(random()))[:5]))
+        for i in range(self.last_id, num_of_ids + self.last_id):
+            ids.append(i)
+        self.last_id = num_of_ids + self.last_id
         return ids
 
     def generate_name(self):
