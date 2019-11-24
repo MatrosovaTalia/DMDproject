@@ -509,7 +509,7 @@ from appointments a inner join users u on a.doctor_id = u.user_id
   and patient_id = 205
   and date(ap_datetime) = (
             select
-                max (date (a.ap_datetime))
+                max(date(a.ap_datetime))
             from appointments a
             where a.patient_id = 205
             )
