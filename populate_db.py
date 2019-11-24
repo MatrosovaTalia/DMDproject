@@ -1,7 +1,7 @@
 import copy
 import datetime
 from faker import Faker
-from random import random, choice, randint
+from random import choice, randint
 
 
 class CodeGenerator:
@@ -87,7 +87,7 @@ class CodeGenerator:
 
         # APPOINTMENTS
         appointments_ids = self.get_ids(num_of_appointments)
-        appointments_dates = self.get_date_and_time(2000, 7, 12, 2019, 4, 25,
+        appointments_dates = self.get_date_and_time(2018, 11, 23, 2019, 11, 23,
                                                     num_of_appointments)
         appointments_specified_values = {"id": appointments_ids, "patient_id":
             patients_ids, "doctor_id": doctor_ids,
@@ -96,22 +96,22 @@ class CodeGenerator:
         # SPECIAL APPOINTMENTS
         if include_special_doctor:
             num_of_special_appointments = 132
-            special_appointments_ids = self.get_ids(num_of_special_appointments)
+            special_appointments_ids = self.get_ids(
+                num_of_special_appointments)
             special_appointments_dates = []
             for i in range(0, 11):
+                special_appointments_dates += self.get_date_and_time(2008 + i,
+                                                                     1, 1,
+                                                                     2008 + i
+                                                                     + 1,
+                                                                     1, 1, 12)
 
-                special_appointments_dates+=self.get_date_and_time(2008 + i,
-                                                                         1, 1,
-                                                                         2008 + i
-                                                                         + 1,
-                                                                         1, 1,
-                                                                         12)
-
-            special_appointments_specified_values = {"id": special_appointments_ids,
-                                                     "patient_id": patients_ids,
-                                                     "doctor_id":
-                                                         [special_doctor_id],
-                                                     "ap_datetime": special_appointments_dates}
+            special_appointments_specified_values = {
+                "id": special_appointments_ids,
+                "patient_id": patients_ids,
+                "doctor_id":
+                    [special_doctor_id],
+                "ap_datetime": special_appointments_dates}
 
         # SUPPLIERS
         suppliers_ids = self.get_ids(num_of_suppliers)
@@ -369,7 +369,7 @@ if __name__ == "__main__":
     cg = CodeGenerator(tables, num_of_doctors=4, num_of_admins=3,
                        num_of_patients=6,
                        num_of_medical_reports=12, num_of_notifications=6,
-                       num_of_appointments=10, num_of_suppliers=2,
+                       num_of_appointments=200, num_of_suppliers=2,
                        num_of_orders=4, num_of_payment_services=1,
                        num_of_transactions=7, num_of_messages=15,
-                       num_of_questions=10, include_special_doctor=True)
+                       num_of_questions=10, include_special_doctor=False)

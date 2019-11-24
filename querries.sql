@@ -507,19 +507,49 @@ INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (228, 7
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (229, 8, 1, '2010-04-22 06:32:22');
 
 
+-------------------------------------------------------------------------------
+
+-- TASK description:
+-- A patient claims that she forgot her bag in the room where she had a medical
+-- appointment on the last time she came to the hospital. The problem is that she had
+-- several appointments on that same day. She believes that the doctor’s name (first or last
+-- name, but not both) starts with “M” or “L” - she doesn’t have a good memory either. Find
+-- all the possible doctors that match the description.
+
+--given the patient id and date return doctors' names
 --test with specific values (patient 205, day '2019-11-12')
-select name, surname --query1 given the patient id and date return doctors' names
+
+-- QUERY 1
+select name, surname
 from appointments a inner join users u on a.doctor_id = u.user_id
   and patient_id = 205
-  and date(ap_datetime) = '2019-11-12'
+  and date(ap_datetime) = (
+            select
+                MAX (date (a.ap_datetime))
+            from appointments a
+            where a.patient_id = 205
+            )
   and (((substr(name, 1, 1) = 'L' or substr(name, 1, 1) = 'M')
     and (substr(surname, 1, 1) != 'L' and substr(surname, 1, 1) != 'M'))
     or ((substr(surname, 1, 1) = 'L' or substr(surname, 1, 1) = 'M')
         and (substr(name, 1, 1) != 'L' and substr(name, 1, 1) != 'M')));
 
 
-select  --query2, assumptions: there are 12 timeslots, with duration on 2 hours each
-case    -- only non-null timeslots for each doctor are shown, there are 52 weeks in a year
+-------------------------------------------------------------------------------
+
+-- TASK DESCRIPTION:
+-- The hospital management team wants to get statistics on the appointments per doctors.
+-- For each doctor, the report should present the total and average number of
+-- appointments in each time slot of the week during the last year. For example, a report
+-- generated on 01/12/2019 should consider data since 01/12/2018.
+
+-- ASSUMPTIONS:
+-- there are 12 timeslots, with duration on 2 hours each
+-- only non-null timeslots for each doctor are shown, there are 52 weeks in a year
+
+-- QUERY 2
+select
+case
     when week_day = 1 then 'Monday'
     when week_day = 2 then 'Tuesday'
     when week_day = 3 then 'Wednesday'
@@ -531,36 +561,51 @@ case    -- only non-null timeslots for each doctor are shown, there are 52 weeks
 
 end as "day_of_week",
 case
-    when timeslot = 1 then '00:00 - 01:59'
-    when timeslot = 2 then '02:00 - 03:59'
-    when timeslot = 3 then '04:00 - 05:59'
-    when timeslot = 4 then '06:00 - 07:59'
-    when timeslot = 5 then '08:00 - 09:59'
-    when timeslot = 6 then '10:00 - 11:59'
-    when timeslot = 7 then '12:00 - 13:59'
-    when timeslot = 8 then '14:00 - 15:59'
-    when timeslot = 9 then '16:00 - 17:59'
-    when timeslot = 10 then '18:00 - 19:59'
-    when timeslot = 11 then '20:00 - 21:59'
-    when timeslot = 12 then '22:00 - 23:59'
+    when timeslot = 0 then '00:00 - 01:59'
+    when timeslot = 1 then '02:00 - 03:59'
+    when timeslot = 2 then '04:00 - 05:59'
+    when timeslot = 3 then '06:00 - 07:59'
+    when timeslot = 4 then '08:00 - 09:59'
+    when timeslot = 5 then '10:00 - 11:59'
+    when timeslot = 6 then '12:00 - 13:59'
+    when timeslot = 7 then '14:00 - 15:59'
+    when timeslot = 8 then '16:00 - 17:59'
+    when timeslot = 9 then '18:00 - 19:59'
+    when timeslot = 10 then '20:00 - 21:59'
+    when timeslot = 11 then '22:00 - 23:59'
+
 end as "timeslot", name, surname, total_appointments, average_appointments
 
 from(
     select doctor_id, timeslot, week_day, count(*) as total_appointments,
            round(count(*)/ 52.0, 4) as average_appointments
     from (
-        select doctor_id, ceil(extract(hour from ap_datetime)/2) as timeslot,
-               EXTRACT(isodow from ap_datetime) as week_day
+        select doctor_id, floor(extract(hour from ap_datetime)/2) as timeslot,
+               EXTRACT(isodow from ap_datetime) as week_day, ap_datetime
         from Appointments
-        where date(ap_datetime) > current_date - interval '1 year') timeslot_doctor
+        where date(ap_datetime) > current_date - interval '1 year'
+        ) timeslot_doctor
     group by doctor_id, timeslot, week_day
         ) t_d inner join users u on u.user_id = t_d.doctor_id
 
 
 order by week_day, timeslot;
 
+
+-------------------------------------------------------------------------------
+
+-- TASK DESCRIPTION:
+-- The hospital wants to retrieve information on the patients who had an appointment
+-- during the previous month. However, an information which is relevant for some
+-- managers is to find which patients visited the hospital every week, at least twice a week.
+-- Such patients probably should receive home visits from doctors
+
+-- ASSUMPTIONS:
 -- test with specific values (from 2019-11-17)
-select name, surname --query3, previous month == previous 28 days starting from current date.
+-- previous month == previous 28 days starting from current date.
+
+-- QUERY 3
+select name, surname
 from (
     select patient_id
     from (
@@ -576,8 +621,9 @@ from (
     ) required_patients
 inner join users u on required_patients.patient_id = u.user_id;
 
---for current date
-select name, surname --query3, previous month == previous 28 days starting from current date.
+
+-- QUERY 3 FOR CURRENT DATE
+select name, surname
 from (
     select patient_id
     from (
@@ -593,8 +639,25 @@ from (
     ) required_patients
 inner join users u on required_patients.patient_id = u.user_id;
 
---test with specific values (from 2019-11-17)
-select sum( -- query4
+
+-------------------------------------------------------------------------------
+
+-- TASK DESCRIPTION:
+-- Managers want to project the expected monthly income if the hospital start to charge a
+-- small value from each patient. The value per appointment would depend on the age and
+-- the number of appointments per month. The rules are summarised as follows:
+
+-- ---------------------------------------------------------------------
+-- |         |appointments in a month < 3 |appointments in a month >= 3|
+-- |Age < 50 |          200 Rub           |             250 Rub        |
+-- |Age >= 50|          400 Rub           |             500 Rub        |
+-- ---------------------------------------------------------------------
+
+-- ASSUMPTIONS:
+-- test with specific values (from 2019-11-17)
+
+-- QUERY 4 FOR 2019-11-17
+select sum(
     case
         when age < 50 and n_visits < 3 then 200 * n_visits
         when age < 50 and n_visits >= 3 then 250 * n_visits
@@ -615,8 +678,8 @@ from (
     group by patient_id, age
     ) age_visits;
 
--- for current date
-select sum( -- query4
+-- QUERY 4 FOR CURRENT DATE
+select sum(
     case
         when age < 50 and n_visits < 3 then 200 * n_visits
         when age < 50 and n_visits >= 3 then 250 * n_visits
@@ -637,8 +700,16 @@ from (
     group by patient_id, age
     ) age_visits;
 
---for current date
-select name, surname -- query5
+
+--- QUERY 5
+-------------------------------------------------------------------------------
+-- The managers want to reward experienced and long serving doctors. For that, they want
+-- to find out the doctors who have attended at least five patients per year for the last 10
+-- years. Also, such doctors should have had attended a total of at least 100 patients in this
+-- period.
+
+-- QUERY 5 FOR CURRENT DATE
+select name, surname
 from (
     select doctor_id
     from (
@@ -658,46 +729,3 @@ from (
         )d_10_years
     ) requested_doctors
 inner join users u on requested_doctors.doctor_id = u.user_id;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
