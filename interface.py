@@ -36,9 +36,9 @@ class Table(tk.Frame):
         for row in rows:
             table.insert('', tk.END, values=tuple(row))
 
-        scrolltable = tk.Scrollbar(self, command=table.yview)
-        table.configure(yscrollcommand=scrolltable.set)
-        scrolltable.pack(side=tk.RIGHT, fill=tk.Y)
+        scrollable = tk.Scrollbar(self, command=table.yview)
+        table.configure(yscrollcommand=scrollable.set)
+        scrollable.pack(side=tk.RIGHT, fill=tk.Y)
         table.pack(expand=tk.YES, fill=tk.BOTH)
 
 
@@ -175,30 +175,39 @@ class Interface:
         buttons.pack(side=tk.BOTTOM, padx=hor_pad, pady=ver_pad)
 
         self.query_1_button = tk.Button(buttons, command=partial(
-            self.show_query,
+            self.run_predefined_query,
             0),
                                         text="Get query 1")
         self.query_1_button.pack(side=tk.LEFT, padx=hor_pad, pady=ver_pad)
 
-        query_2_button = tk.Button(buttons, command=partial(self.show_query,
-                                                            1),
+        query_2_button = tk.Button(buttons,
+                                   command=partial(self.run_predefined_query,
+                                                   1),
                                    text="Get query 2")
         query_2_button.pack(side=tk.LEFT, padx=hor_pad, pady=ver_pad)
 
-        query_3_button = tk.Button(buttons, command=partial(self.show_query,
-                                                            2),
+        query_3_button = tk.Button(buttons,
+                                   command=partial(self.run_predefined_query,
+                                                   2),
                                    text="Get query 3")
         query_3_button.pack(side=tk.LEFT, padx=hor_pad, pady=ver_pad)
 
-        query_4_button = tk.Button(buttons, command=partial(self.show_query,
-                                                            3),
+        query_4_button = tk.Button(buttons,
+                                   command=partial(self.run_predefined_query,
+                                                   3),
                                    text="Get query 4")
         query_4_button.pack(side=tk.LEFT, padx=hor_pad, pady=ver_pad)
 
-        query_4_button = tk.Button(buttons, command=partial(self.show_query,
-                                                            4),
+        query_5_button = tk.Button(buttons,
+                                   command=partial(self.run_predefined_query,
+                                                   4),
                                    text="Get query 5")
-        query_4_button.pack(side=tk.LEFT, padx=hor_pad, pady=ver_pad)
+        query_5_button.pack(side=tk.LEFT, padx=hor_pad, pady=ver_pad)
+
+        self.custom_query_button = tk.Button(buttons,
+                                             command=self.run_custom_query,
+                                             text="Run your query")
+        self.custom_query_button.pack(side=tk.LEFT, padx=hor_pad, pady=ver_pad)
 
         root.mainloop()
 
@@ -211,7 +220,13 @@ class Interface:
     def popup_entry_value(self):
         return self.popupW.value
 
-    def show_query(self, query_num):
+    def run_custom_query(self):
+        self.popup(self.custom_query_button, "Enter your query")
+        query = self.popup_entry_value()
+
+        self.show_query(query)
+
+    def run_predefined_query(self, query_num):
         query = self.queries[query_num]
         if query_num == 0:
             self.popup(self.query_1_button, "Enter patient_id")
@@ -219,7 +234,9 @@ class Interface:
             if new_id != "":
                 self.patient_id = new_id
             query = query.replace('id_to_be_inserted', str(self.patient_id))
+        self.show_query(query)
 
+    def show_query(self, query):
         self.cursor.execute(query)
         records = self.cursor.fetchall()
 

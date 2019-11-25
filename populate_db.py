@@ -16,9 +16,22 @@ class CodeGenerator:
 
         self.db_tables = db_tables
 
-        self.names = ["Artyom", "Natasha", "Ruphina", "Alexander", "Pizda"]
-        self.surnames = ["Yuloskov", "Matrosova", "Sirgalina", "Gavnov",
-                         "Mocha"]
+        self.messages = ["Hi", "Bye", "Call Dr. Jimmth", "Come to 319",
+                         "Emergency case in 111", "Need nurse in 109", "Done"]
+        self.surnames = ["Bekket", "Backer", "Smith", "Jonson", "Wharshall",
+                         "Hamilton", "Chain"]
+        self.names = ["Eugen", "Samu", "Fain", "Sasha", "Tomm", "Oman"]
+        self.med_history = ["Had chickenpox when was 10",
+                            "Had chickenpox when was 18",
+                            "Never had chickenpox",
+                            "Sick with measles",
+                            "Broke left wrist at age 15",
+                            "Broke rigth wrist at age 15",
+                            "Sick of scarlet fever at age 6",
+                            "Sick of scarlet fever at age 17",
+                            "Sick of scarlet fever last year",
+                            "Catches cold every winter"]
+
         self.specializations = ["Family", "Anesthesiology", "Emergency"]
         self.products = ["mocha", "gavno", "confety"]
         self.payment_services = ["visa", "mastercard"]
@@ -74,10 +87,9 @@ class CodeGenerator:
                                         "content": med_report_content}
 
         # MEDICAL HISTORIES
-        med_histories_content = self.generate_text(50, num_of_patients)
         med_histories_specified_values = {"patient_id": patients_ids,
                                           "med_info":
-                                              med_histories_content}
+                                              self.med_history}
 
         # NOTIFICATIONS
         notifications_ids = self.get_ids(num_of_notifications)
@@ -145,9 +157,8 @@ class CodeGenerator:
 
         # MESSAGES
         messages_ids = self.get_ids(num_of_messages)
-        messages_contents = self.generate_text(150, num_of_messages)
         messages_specified_values = {"id": messages_ids, "user1_id":
-            user_ids, "user2_id": user_ids, "message": messages_contents}
+            user_ids, "user2_id": user_ids, "message": self.messages}
 
         # QUESTIONS
         questions_ids = self.get_ids(num_of_questions)
@@ -172,7 +183,7 @@ class CodeGenerator:
                             copy.deepcopy(patients_specified_values))
 
         self.populate_table("med_histories", num_of_patients, copy.deepcopy(
-            med_histories_specified_values))
+            med_histories_specified_values), ["med_info"])
 
         self.populate_table("med_reports", num_of_medical_reports,
                             copy.deepcopy(med_reports_specified_values),
@@ -207,7 +218,7 @@ class CodeGenerator:
                             ["user_id", "p_service_id"])
 
         self.populate_table("messages", num_of_messages, copy.deepcopy(
-            messages_specified_values), ["user1_id", "user2_id"])
+            messages_specified_values), ["user1_id", "user2_id", "message"])
 
         self.populate_table("questions", num_of_questions, copy.deepcopy(
             questions_specified_values), ["user_id"])
