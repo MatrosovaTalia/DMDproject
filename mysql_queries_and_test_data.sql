@@ -1,143 +1,128 @@
-DROP SCHEMA public CASCADE;
-CREATE SCHEMA public;
+-- This is the MySQL file that contains queries and a test data to check
+-- the correctness.
+SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+SET time_zone="+00:00";
 
-create table if not exists Users
-(
-    user_id integer not null,
-    type    varchar(32),
-    name    varchar(32),
+CREATE TABLE users (
+    user_id int(11) NOT NULL,
+    `type` varchar(32),
+    name varchar(32),
     surname varchar(32),
-    age     integer,
-    gender  varchar(16),
-    primary key (user_id)
-);
+    age int(11),
+    gender varchar(16),
+    PRIMARY KEY (user_id)
+) ENGINE=MyISAM;
 
-create table if not exists Employees
-(
-    user_id integer not null,
-    salary  integer,
-    primary key (user_id),
-    foreign key (user_id) references Users (user_id)
-);
-
-create table if not exists Doctors
-(
-    specialization varchar(32),
-    user_id        integer not null,
-    primary key (user_id),
-    foreign key (user_id) references Employees (user_id)
-);
-
-create table if not exists Administrators
-(
-    user_id      integer not null,
+CREATE TABLE administrators (
+    user_id int(11) NOT NULL,
     access_level varchar(32),
-    primary key (user_id),
-    foreign key (user_id) references Employees (user_id)
-);
+    PRIMARY KEY (user_id),
+    FOREIGN KEY (user_id) REFERENCES employees (user_id)
+) ENGINE=MyISAM;
 
-create table if not exists Patients
-(
-    user_id integer not null,
-    primary key (user_id),
-    foreign key (user_id) references Users (user_id)
-);
+CREATE TABLE appointments (
+    id int(11) NOT NULL,
+    patient_id int(11),
+    doctor_id int(11),
+    ap_datetime timestamp NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=MyISAM;
 
-create table if not exists Appointments
-(
-    id          integer   not null,
-    patient_id  integer references Patients (user_id),
-    doctor_id   integer references Doctors (user_id),
-    ap_datetime timestamp not null,
-    primary key (id)
-);
+CREATE TABLE doctors (
+    specialization varchar(32),
+    user_id int(11) NOT NULL,
+    PRIMARY KEY (user_id),
+    FOREIGN KEY (user_id) REFERENCES employees (user_id)
+) ENGINE=MyISAM;
 
+CREATE TABLE employees (
+    user_id int(11) NOT NULL,
+    salary int(11),
+    PRIMARY KEY (user_id),
+    FOREIGN KEY (user_id) REFERENCES users (user_id)
+) ENGINE=MyISAM;
 
-create table if not exists Med_Histories
-(
-    patient_id integer not null,
-    med_info   varchar(100), -- represents medical history to achieve better treatment
-    primary key (patient_id),
-    foreign key (patient_id) references Patients (user_id)
-);
+CREATE TABLE med_histories (
+    patient_id int(11) NOT NULL,
+    med_info varchar(100),
+    PRIMARY KEY (patient_id),
+    FOREIGN KEY (patient_id) REFERENCES patients (user_id)
+) ENGINE=MyISAM;
 
-create table if not exists Notifications
-(
-    id      integer not null,
-    user_id integer,
+CREATE TABLE med_reports (
+    medr_id int(11) NOT NULL,
+    doctor_id int(11) NOT NULL,
+    content text, 
+    PRIMARY KEY (medr_id),
+    FOREIGN KEY (doctor_id) REFERENCES doctors (user_id)
+) ENGINE=MyISAM;
+
+CREATE TABLE messages (
+    id int(11) NOT NULL,
+    user1_id int(11) NOT NULL,
+    user2_id int(11) NOT NULL,
+    message varchar(200),
+    PRIMARY KEY (id),
+    FOREIGN KEY (user1_id) REFERENCES users (user_id),
+    FOREIGN KEY (user2_id) REFERENCES users (user_id)
+) ENGINE=MyISAM;
+
+CREATE TABLE notifications (
+    id int(11) NOT NULL,
+    user_id int(11),
     content varchar(100),
-    primary key (id),
-    foreign key (user_id) references Users (user_id)
-);
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES users (user_id)
+) ENGINE=MyISAM;
 
-create table if not exists Med_reports
-(
-    medR_id   integer not null,
-    doctor_id integer not null,
-    content   varchar(300),
-    primary key (medR_id),
-    foreign key (doctor_id) references Doctors (user_id)
-);
+CREATE TABLE orders (
+    id int(11) NOT NULL,
+    supplier_id int(11) NOT NULL,
+    employee_id int(11) NOT NULL,
+    price int(11),
+    PRIMARY KEY (id),
+    FOREIGN KEY (employee_id) REFERENCES employees (user_id),
+    FOREIGN KEY (supplier_id) REFERENCES suppliers (id)
+) ENGINE=MyISAM;
 
-create table if not exists Suppliers
-(
-    id      integer not null,
-    product varchar(50),
-    primary key (id)
-);
+CREATE TABLE patients (
+    user_id int(11) NOT NULL,
+    PRIMARY KEY (user_id),
+    FOREIGN KEY (user_id) REFERENCES users (user_id)
+) ENGINE=MyISAM;
 
-create table if not exists Orders
-(
-    id          integer not null,
-    supplier_id integer not null,
-    employee_id integer not null,
-    price       integer,
-    primary key (id),
-    foreign key (employee_id) references Employees (user_id),
-    foreign key (supplier_id) references Suppliers (id)
-);
-
-
-create table if not exists Payment_Services
-(
-    id      integer not null,
+CREATE TABLE payment_services (
+    id int(11) NOT NULL,
     ps_name varchar(30),
-    primary key (id)
-);
+    PRIMARY KEY (id)
+) ENGINE=MyISAM;
+
+CREATE TABLE questions (
+    id int(11) NOT NULL,
+    user_id int(11) NOT NULL,
+    question varchar(200) NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES users (user_id)
+) ENGINE=MyISAM;
+
+CREATE TABLE suppliers (
+    id int(11) NOT NULL,
+    product varchar(50),
+    PRIMARY KEY (id)
+) ENGINE=MyISAM;
+
+CREATE TABLE transactions (
+    id int(11) NOT NULL,
+    user_id int(11) NOT NULL,
+    p_service_id int(11) NOT NULL,
+    amount int(11) NOT NULL,
+    `type` varchar(50),
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES users (user_id),
+    FOREIGN KEY (p_service_id) REFERENCES payment_services (id)
+) ENGINE=MyISAM;
 
 
-create table if not exists Transactions
-(
-    id           integer not null,
-    user_id      integer not null,
-    p_service_id integer not null,
-    amount       integer not null,
-    type         varchar(50), -- income/expense for the hospital
-    primary key (id),
-    foreign key (user_id) references Users (user_id),
-    foreign key (p_service_id) references Payment_Services (id)
-);
-
-create table if not exists Messages
-(
-    id       integer not null,
-    user1_id integer not null,
-    user2_id integer not null,
-    message  varchar(200),
-    primary key (id),
-    foreign key (user1_id) references Users (user_id),
-    foreign key (user2_id) references Users (user_id)
-
-);
-
-create table if not exists Questions
-(
-    id       integer      not null,
-    user_id  integer      not null,
-    question varchar(200) not null,
-    primary key (id),
-    foreign key (user_id) references Users (user_id)
-);
 
 INSERT INTO users (user_id, name, surname, type, age, gender)
 VALUES (0, 'Doctor', 'Givago', 'doctor', 46, 'F');
@@ -166,7 +151,7 @@ VALUES (203, 'Aleksey', 'Mikhailov', 'patient', 15, 'M');
 INSERT INTO users (user_id, name, surname, type, age, gender)
 VALUES (204, 'Mary', 'Yuloskov', 'patient', 13, 'F');
 INSERT INTO users (user_id, name, surname, type, age, gender)
-VALUES (205, 'Mary', 'Ivanova', 'patient', 51, 'F'); -- check this guy for query 1
+VALUES (205, 'Mary', 'Ivanova', 'patient', 51, 'F'); #  check this guy for query 1
 INSERT INTO users (user_id, name, surname, type, age, gender)
 VALUES (202, 'Aleksey', 'Ivanov', 'patient', 53, 'M');
 INSERT INTO users (user_id, name, surname, type, age, gender)
@@ -246,8 +231,6 @@ INSERT INTO med_histories (patient_id, med_info)
 VALUES (204, 'Will wrong son maybe. Play large after blood incre');
 INSERT INTO med_histories (patient_id, med_info)
 VALUES (206, 'Special media feel most professional set debate. T');
-
-
 
 INSERT INTO employees (user_id, salary)
 VALUES (005, 21845);
@@ -342,6 +325,7 @@ INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (76, 7,
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (77, 9, 0, '2010-10-01 10:01:07');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (78, 8, 0, '2010-03-01 02:48:31');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (79, 9, 0, '2011-05-05 07:08:06');
+
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (80, 7, 0, '2011-07-10 19:34:24');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (81, 8, 0, '2011-12-09 04:56:43');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (82, 7, 0, '2011-04-28 04:35:08');
@@ -379,6 +363,7 @@ INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (113, 7
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (114, 6, 0, '2013-02-12 12:34:44');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (115, 8, 0, '2014-01-06 06:50:20');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (116, 11, 0, '2014-11-14 22:35:53');
+
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (117, 10, 0, '2014-09-12 13:15:22');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (118, 11, 0, '2014-04-06 02:49:04');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (119, 7, 0, '2014-11-28 11:23:24');
@@ -416,6 +401,7 @@ INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (150, 9
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (151, 8, 0, '2017-03-22 06:05:47');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (152, 10, 0, '2017-11-01 01:55:31');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (153, 7, 0, '2017-07-24 03:56:27');
+
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (154, 10, 0, '2017-05-17 15:36:32');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (155, 10, 0, '2017-02-13 01:50:27');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (156, 9, 0, '2017-11-03 03:03:48');
@@ -445,7 +431,7 @@ INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (178, 7
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (179, 8, 0, '2019-04-22 06:32:22');
 
 
---doctror 001 have 5 appointments per year but less than 100 per 10 years
+# doctror 001 have 5 appointments per year but less than 100 per 10 years
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (180, 11, 1, '2019-02-21 20:50:20');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (181, 11, 1, '2019-07-28 09:51:05');
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (182, 10, 1, '2019-03-03 21:54:39');
@@ -507,49 +493,21 @@ INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (228, 7
 INSERT INTO appointments (id, patient_id, doctor_id, ap_datetime) VALUES (229, 8, 1, '2010-04-22 06:32:22');
 
 
--------------------------------------------------------------------------------
-
--- TASK description:
--- A patient claims that she forgot her bag in the room where she had a medical
--- appointment on the last time she came to the hospital. The problem is that she had
--- several appointments on that same day. She believes that the doctor’s name (first or last
--- name, but not both) starts with “M” or “L” - she doesn’t have a good memory either. Find
--- all the possible doctors that match the description.
-
---given the patient id and date return doctors' names
---test with specific values (patient 205, day '2019-11-12')
-
--- QUERY 1
-select name, surname
+# test with specific values (patient 205, day '2019-11-12')
+select name, surname  # query1 given the patient id and date return doctors' names
 from appointments a inner join users u on a.doctor_id = u.user_id
   and patient_id = 205
-  and date(ap_datetime) = (
-            select
-                MAX (date (a.ap_datetime))
-            from appointments a
-            where a.patient_id = 205
-            )
+  and date(ap_datetime) = '2019-11-12'
   and (((substr(name, 1, 1) = 'L' or substr(name, 1, 1) = 'M')
     and (substr(surname, 1, 1) != 'L' and substr(surname, 1, 1) != 'M'))
     or ((substr(surname, 1, 1) = 'L' or substr(surname, 1, 1) = 'M')
         and (substr(name, 1, 1) != 'L' and substr(name, 1, 1) != 'M')));
+        
 
 
--------------------------------------------------------------------------------
 
--- TASK DESCRIPTION:
--- The hospital management team wants to get statistics on the appointments per doctors.
--- For each doctor, the report should present the total and average number of
--- appointments in each time slot of the week during the last year. For example, a report
--- generated on 01/12/2019 should consider data since 01/12/2018.
-
--- ASSUMPTIONS:
--- there are 12 timeslots, with duration on 2 hours each
--- only non-null timeslots for each doctor are shown, there are 52 weeks in a year
-
--- QUERY 2
-select
-case
+select  #query2, assumptions: there are 12 timeslots, with duration on 2 hours each
+case    #only non-null timeslots for each doctor are shown, there are 52 weeks in a year
     when week_day = 1 then 'Monday'
     when week_day = 2 then 'Tuesday'
     when week_day = 3 then 'Wednesday'
@@ -581,9 +539,10 @@ from(
            round(count(*)/ 52.0, 4) as average_appointments
     from (
         select doctor_id, floor(extract(hour from ap_datetime)/2) as timeslot,
-               EXTRACT(isodow from ap_datetime) as week_day, ap_datetime
-        from Appointments
-        where date(ap_datetime) > current_date - interval '1 year'
+               #EXTRACT(isodow from ap_datetime) as week_day, ap_datetime
+               weekday(ap_datetime) as week_day
+        from appointments
+        where date(ap_datetime) > current_date - interval 1 YEAR
         ) timeslot_doctor
     group by doctor_id, timeslot, week_day
         ) t_d inner join users u on u.user_id = t_d.doctor_id
@@ -592,27 +551,18 @@ from(
 order by week_day, timeslot;
 
 
--------------------------------------------------------------------------------
 
--- TASK DESCRIPTION:
--- The hospital wants to retrieve information on the patients who had an appointment
--- during the previous month. However, an information which is relevant for some
--- managers is to find which patients visited the hospital every week, at least twice a week.
--- Such patients probably should receive home visits from doctors
 
--- ASSUMPTIONS:
--- test with specific values (from 2019-11-17)
--- previous month == previous 28 days starting from current date.
 
--- QUERY 3
-select name, surname
+#  test with specific values (from 2019-11-17)
+select name, surname # query3, previous month == previous 28 days starting from current date.
 from (
     select patient_id
     from (
         select patient_id
         from (
             select patient_id, ceil(('2019-11-17' - date(ap_datetime)) / 7) as week_num
-            from Appointments
+            from appointments
             where '2019-11-17' - date(ap_datetime) < 28) month_patients
         group by week_num, patient_id
         having count(*) >= 2) week_patients
@@ -622,15 +572,15 @@ from (
 inner join users u on required_patients.patient_id = u.user_id;
 
 
--- QUERY 3 FOR CURRENT DATE
-select name, surname
+# for current date
+select name, surname # query3, previous month == previous 28 days starting from current date.
 from (
     select patient_id
     from (
         select patient_id
         from (
             select patient_id, ceil((current_date - date(ap_datetime)) / 7) as week_num
-            from Appointments
+            from appointments
             where current_date - date(ap_datetime) < 28) month_patients
         group by week_num, patient_id
         having count(*) >= 2) week_patients
@@ -639,25 +589,8 @@ from (
     ) required_patients
 inner join users u on required_patients.patient_id = u.user_id;
 
-
--------------------------------------------------------------------------------
-
--- TASK DESCRIPTION:
--- Managers want to project the expected monthly income if the hospital start to charge a
--- small value from each patient. The value per appointment would depend on the age and
--- the number of appointments per month. The rules are summarised as follows:
-
--- ---------------------------------------------------------------------
--- |         |appointments in a month < 3 |appointments in a month >= 3|
--- |Age < 50 |          200 Rub           |             250 Rub        |
--- |Age >= 50|          400 Rub           |             500 Rub        |
--- ---------------------------------------------------------------------
-
--- ASSUMPTIONS:
--- test with specific values (from 2019-11-17)
-
--- QUERY 4 FOR 2019-11-17
-select sum(
+# test with specific values (from 2019-11-17)
+select sum( #  query4
     case
         when age < 50 and n_visits < 3 then 200 * n_visits
         when age < 50 and n_visits >= 3 then 250 * n_visits
@@ -671,15 +604,15 @@ from (
         select age, patient_id
         from (
             select patient_id
-            from Appointments
+            from appointments
             where '2019-11-17' - date(ap_datetime) < 31) m_p
         inner join users u on m_p.patient_id = u.user_id
      ) month_ap
     group by patient_id, age
     ) age_visits;
 
--- QUERY 4 FOR CURRENT DATE
-select sum(
+#  for current date
+select sum( #  query4
     case
         when age < 50 and n_visits < 3 then 200 * n_visits
         when age < 50 and n_visits >= 3 then 250 * n_visits
@@ -693,23 +626,15 @@ from (
         select age, patient_id
         from (
             select patient_id
-            from Appointments
+            from appointments
             where current_date - date(ap_datetime) < 31) m_p
         inner join users u on m_p.patient_id = u.user_id
      ) month_ap
     group by patient_id, age
     ) age_visits;
 
-
---- QUERY 5
--------------------------------------------------------------------------------
--- The managers want to reward experienced and long serving doctors. For that, they want
--- to find out the doctors who have attended at least five patients per year for the last 10
--- years. Also, such doctors should have had attended a total of at least 100 patients in this
--- period.
-
--- QUERY 5 FOR CURRENT DATE
-select name, surname
+# for current date
+select name, surname #  query5
 from (
     select doctor_id
     from (
@@ -718,8 +643,8 @@ from (
             select doctor_id, count(*) as num_app
             from (
                 select doctor_id, (current_date - date(ap_datetime))/365 as year_num
-                from Appointments
-                where date(ap_datetime) > current_date - interval '10 years'
+                from appointments
+                where date(ap_datetime) > current_date - interval 10 YEAR
                 ) app_10_years
             group by doctor_id, year_num
             having count(*) >= 5

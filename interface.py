@@ -1,3 +1,24 @@
+"""
+This module provides the interface for predefined queries. Also it has
+functionality to run custom queries.
+
+Note
+----
+You have to configure database credentials in Interface.__init__(); Also you
+should have your database populated or you will get an empty input.
+
+Info about queries
+------------------
+In the first query you have a possibility to choose a patient for which you
+need to find doctors. Press "OK", to run the query with predefined patient.
+If you populated the database with the data from
+postgres_queries_and_test_data.sql, you should get a reasonable output.
+Pay attention, some queries are depend on the current date, so you might
+have an empty output if the data in the database is not configured for the
+current date.
+
+"""
+
 import psycopg2
 import tkinter as tk
 from functools import partial
@@ -45,14 +66,17 @@ class Table(tk.Frame):
 class Interface:
     def __init__(self, root):
         self.root = root
+        # Initialize db.
+        # Pass your credentials to connect!
         conn = psycopg2.connect(dbname='postgres', user='postgres',
                                 password='docker', host='localhost')
+
         self.cursor = conn.cursor()
         self.table = Table(root)
 
         self.patient_id = 205
 
-        self.queries = ["select name, surname "
+        self.queries = ["select name, surname "  # query 1
                         "from appointments a inner join users u on "
                         "a.doctor_id = u.user_id and patient_id = "
                         "id_to_be_inserted "
@@ -69,6 +93,7 @@ class Interface:
                         "1, 1) != 'M')) or ((substr(surname, 1, 1) = 'L' or "
                         "substr(surname, 1, 1) = 'M') and (substr(name, 1, "
                         "1) != 'L' and substr(name, 1, 1) != 'M')));",
+                        # query 2
                         "select "
                         "case "
                         "when week_day = 1 then 'Monday'"
@@ -110,16 +135,17 @@ class Interface:
                         ") t_d inner join users u on u.user_id = "
                         "t_d.doctor_id "
                         "order by week_day, timeslot;",
+                        # query 3
                         "select name, surname "
                         "from ( "
                         "select patient_id "
                         "from ( "
                         "select patient_id "
                         "from ( "
-                        "select patient_id, ceil(('2019-11-17' - date("
+                        "select patient_id, ceil((current_date - date("
                         "ap_datetime)) / 7) as week_num "
                         "from Appointments "
-                        "where '2019-11-17' - date(ap_datetime) < 28) "
+                        "where current_date - date(ap_datetime) < 28) "
                         "month_patients "
                         "group by week_num, patient_id "
                         "having count(*) >= 2) week_patients "
@@ -128,6 +154,7 @@ class Interface:
                         ") required_patients "
                         "inner join users u on required_patients.patient_id "
                         "= u.user_id; ",
+                        # query 4
                         "select sum( "
                         "case "
                         "when age < 50 and n_visits < 3 then 200 * n_visits "
@@ -143,11 +170,12 @@ class Interface:
                         "from ( "
                         "select patient_id "
                         "from Appointments "
-                        "where '2019-11-17' - date(ap_datetime) < 31) m_p "
+                        "where current_date - date(ap_datetime) < 31) m_p "
                         "inner join users u on m_p.patient_id = u.user_id "
                         ") month_ap "
                         "group by patient_id, age "
                         ") age_visits; ",
+                        # query 5
                         "select name, surname "
                         "from ( "
                         "select doctor_id "

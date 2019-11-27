@@ -1,3 +1,10 @@
+"""
+This module provides a possibility to generate SQL insert statements for the
+tables in postgres_tables.sql. You can vary the amount of data you need to
+generate in the parameters of the constructor.
+
+"""
+
 import copy
 import datetime
 from faker import Faker
@@ -377,6 +384,8 @@ if __name__ == "__main__":
               "orders": orders, "payment_services": payment_services,
               "transactions": transactions, "messages": messages,
               "questions": questions}
+
+    # Change the number of items here!!!
     cg = CodeGenerator(tables, num_of_doctors=4, num_of_admins=3,
                        num_of_patients=6,
                        num_of_medical_reports=12, num_of_notifications=6,

@@ -1,3 +1,6 @@
+-- This is the PostgresSQL file that contains SQL tables. You can use insert
+-- generator populate_db.py to fill up these tables.
+
 DROP TABLE if exists Users, Employees, Doctors, Appointments, Agenda, Med_Histories, Med_reports, Messages, Notifications,
     Orders, Patients, Payment_Services, Questions, Suppliers, Transactions, Users, Administrators;
 
